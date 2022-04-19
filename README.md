@@ -17,5 +17,5 @@ You can install the development version of NMRcycling from
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("ricoderks/NMRcycling")
+remotes::install_github("CPM-Metabolomics-Lipidomics/NMRcycling")
 ```
