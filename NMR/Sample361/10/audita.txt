@@ -1,0 +1,23 @@
+##TITLE= Audit trail, TOPSPIN		Version 3.0
+##JCAMPDX= 5.01
+##ORIGIN= Bruker BioSpin GmbH
+##OWNER= nmrsu
+$$ C:/u/data/SamTrack/nmr/FOS2014_K_472_B_1_R_1_Q_0_F_4_ID_361_NMR/10/audita.txt
+##AUDIT TRAIL=  $$ (NUMBER, WHEN, WHO, WHERE, PROCESS, VERSION, WHAT)
+(   1,<2014-10-27 19:00:48.282 +0100>,<nmrsu>,<5-PARA-11-0140>,<go>,<TOPSPIN 3.0>,
+      <created by zg
+	started at 2014-10-27 18:58:30.608 +0100,
+	POWCHK enabled, PULCHK disabled,
+       configuration hash MD5:
+       EA 5C 07 41 B4 D2 8E 75 1A AE E3 9E BA 5E 50 6E
+       data hash MD5: 64K
+       C5 88 52 B2 49 79 D2 62 A6 44 BA B7 EF 72 7F C9>)
+(   2,<2014-10-27 19:00:50.482 +0100>,<nmrsu>,<5-PARA-11-0140>,<audit>,<TOPSPIN 3.0>,
+      <user comment:
+       ICON-NMR User ID: SamTrack
+       data hash MD5: 64K
+       C5 88 52 B2 49 79 D2 62 A6 44 BA B7 EF 72 7F C9>)
+##END=
+
+$$ hash MD5
+$$ 66 5F BC 5F BD DB A1 9C 5A E0 92 4A 96 29 D6 26
