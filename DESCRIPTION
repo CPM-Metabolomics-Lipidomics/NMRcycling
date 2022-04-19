@@ -9,3 +9,7 @@ Description: This package belongs to the NMR base metabolimics chapter which is
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.1.2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
