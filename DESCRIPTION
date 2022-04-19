@@ -1,0 +1,11 @@
+Package: NMRcycling
+Type: Package
+Title: This package belongs to the NMR base metabolimics chapter.
+Version: 0.1.0
+Author: Rico Derks, Aswin Verhoeven, Martin Giera
+Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
+Description: This package belongs to the NMR base metabolimics chapter which is
+    part of the book XXX.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
