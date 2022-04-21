@@ -8,7 +8,7 @@ Authors@R: c(
 Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
 Description: This package belongs to the NMR base metabolimics chapter which is
     part of the book XXX.
-License: MIT + file LICENSE
+License: BSD_2_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
