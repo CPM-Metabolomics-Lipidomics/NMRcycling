@@ -6,8 +6,9 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of `NMRcycling` is to be an addition to the chapter about in
-NMR based metabolomics in the book XXX. This package contains the data
+The goal of `NMRcycling` is to be an addition to the chapter *NMR based 
+Metabolomics: monitoring physiological response to physical exercise* 
+in the book XXX. This package contains the data
 and functions to work with the data.
 
 ## Installation
