@@ -1,0 +1,177 @@
+---
+title: "NMR Cycling"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{NMRcycling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(NMRcycling)
+library(AlpsNMR)
+library(readxl)
+library(prospectr)
+library(factoextra)
+
+data_dir <- "/home/ricoderks/Documents/LUMC/Projects/NMRcycling_data/NMR"
+```
+
+# Introduction
+
+# Data analysis
+
+## Read data
+
+```{r get_dataset_names}
+# get all folders
+datasetnames <- list.dirs(path = data_dir,
+                          recursive = FALSE)
+
+# get the sample name from the folder name
+sample_names <- basename(datasetnames)
+```
+
+```{r read_data, message=FALSE, warning=FALSE}
+# read all data
+datasets <- nmr_read_samples(sample_names = file.path(datasetnames, "10"))
+
+# interpolate 1D NMR spectra
+datasets <- nmr_interpolate_1D(samples = datasets, 
+                               axis = c(min = -0.5, max = 10, by = 2.3E-4))
+
+# show raw NMR plots
+plot(datasets, 
+     NMRExperiment = c("10...1", "10...2"))
+```
+
+## Pre-processing
+
+Remove regions from the spectra.
+
+```{r exclude_regions}
+# define regions to exclude
+regions <- list(water = c(4.5, 5.0), 
+                upfield = c(-10, 0.5), 
+                downfield = c(10, 20))
+
+# exclude the regions
+datasets <- nmr_exclude_region(samples = datasets, 
+                               exclude = regions)
+plot(datasets, 
+     NMRExperiment = c("10...1", "10...2"))
+```
+
+## Pre-treatment
+
+### Normalization
+
+```{r normalization}
+# normalization
+datasets <- nmr_normalize(samples = datasets, 
+                          method = c("area"))
+
+# show normalized spectra
+plot(datasets, 
+     NMRExperiment = c("10...1", "10...2"))
+```
+
+### Binning
+
+```{r binning}
+# bin the data
+datasets$data_1r <- binning(X = datasets$data_1r, 
+                            bin.size = 400)
+
+# bin the axis
+datasets$axis <- binning(X = datasets$axis, 
+                         bin.size = 400)
+
+# showed binned spectra
+plot(datasets, 
+     NMRExperiment = c("10...1", "10...2"))
+```
+
+### Read meta data
+
+```{r metadata}
+# read the meta data, meta data is in hte package NMRcycling
+meta <- read_excel(path = system.file("metadata", "metadata.xlsx",
+                                      package = "NMRcycling"))
+
+ds <- datasets
+
+ds$metadata$external$path <- sample_names #datasets$metadata$info$info_sample_path
+
+# add meta data to the dataset
+ds <- nmr_meta_add(nmr_data = ds, 
+                   metadata = meta, 
+                   by = c("path" = "Path"))
+```
+
+### PCA analysis
+
+```{r PCA}
+# get group information
+groups <- ds$metadata$external$Phase
+
+# create data.frame for PCA analysis
+df <- ds$data_1r
+rownames(df) <- ds$metadata$external$RowID
+colnames(df) <- round(ds$axis, 2)
+
+# Remove pooled sample
+df2 <- df[rownames(df) != "Pool",]
+groups2 <- groups[groups != "Pool"]
+
+# Mean centering and Pareto scaling 
+df2 <- apply(X = df2,
+             MARGIN  = 2,
+             function(x) { (x - mean(x)) / sqrt(sd(x)) })
+
+df2 <- df2 * 500.0
+
+# PCA
+res <- (prcomp(df2))
+```
+
+Show the scores plot.
+
+```{r pca_scoresplot}
+# show scores plot
+fviz_pca_ind(X = res,
+             axes = c(1, 2),
+             col.ind = groups2, # color by groups
+             #palette = c("#00AFBB",  "#FC4E07", "#00AFBB",  "#FC4E07"),
+             addEllipses = TRUE, # Concentration ellipses
+             ellipse.type = "confidence",
+             legend.title = "Groups",
+             repel = TRUE
+             )
+```
+
+Show the biplot.
+
+```{r pca_biplot}
+fviz_pca_biplot(X = res,
+                repel = TRUE,
+                axes = c(1, 2),
+                col.var = "contrib", # Variables color
+                gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                select.var = list(contrib = 10)
+                )
+```
+
+# Sessioninfo
+
+```{r}
+sessioninfo::session_info()
+```
+
