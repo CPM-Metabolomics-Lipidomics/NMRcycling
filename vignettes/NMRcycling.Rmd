@@ -1,5 +1,5 @@
 ---
-title: "NMR Cycling"
+title: "NMRcycling"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{NMRcycling}
@@ -20,8 +20,6 @@ library(AlpsNMR)
 library(readxl)
 library(prospectr)
 library(factoextra)
-
-data_dir <- "/home/ricoderks/Documents/LUMC/Projects/NMRcycling_data/NMR"
 ```
 
 # Introduction
@@ -32,7 +30,8 @@ data_dir <- "/home/ricoderks/Documents/LUMC/Projects/NMRcycling_data/NMR"
 
 ```{r get_dataset_names}
 # get all folders
-datasetnames <- list.dirs(path = data_dir,
+datasetnames <- list.dirs(path = system.file("extdata", 
+                                             package = "NMRcycling"),
                           recursive = FALSE)
 
 # get the sample name from the folder name
