@@ -75,7 +75,8 @@ peakfit <- function(v, v0start, fwhhstart, pstart, astart, bstart, sp) {
                  fwhh = fwhhfit,
                  p = pstart),
     algorithm = "port",
-    control = stats::nls.control(maxiter = 500)
+    control = stats::nls.control(maxiter = 500,
+                                 warnOnly = TRUE)
   )
 
   result <- as.list(summary(fit)[[10]][, "Estimate"])
