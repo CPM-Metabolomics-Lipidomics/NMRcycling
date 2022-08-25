@@ -2,7 +2,7 @@
 % Please edit documentation in R/peak.R
 \name{peak}
 \alias{peak}
-\title{Create peak}
+\title{Peak fitting function}
 \usage{
 peak(v, v0, fwhh, p, a, b)
 }
@@ -23,7 +23,7 @@ peak(v, v0, fwhh, p, a, b)
 WIP
 }
 \description{
-Create a peak with shape ....
+Peak fitting function
 }
 \author{
 Aswin Verhoeven
