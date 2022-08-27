@@ -518,7 +518,7 @@ for(t in id) {
   acetone <- rbind(acetone, data.frame(result))
 }
 
-acetone <- ((acetone$a / 6) / creatinine) # number of protons
+acetone <- (acetone$a / 6) / creatinine # number of protons
 ```
 
 ```{r fig.width=7, fig.height=5}
@@ -571,7 +571,7 @@ for(t in id) {
   acetylcarnitine <- rbind(acetylcarnitine, data.frame(result))
 }
 
-acetylcarnitine <- (acetylcarnitine$a / 9)/creatinine
+acetylcarnitine <- (acetylcarnitine$a / 9) / creatinine
 ```
 
 ```{r fig.width=7, fig.height=5}
@@ -624,7 +624,7 @@ for(t in id) {
   dicarboxylate <- rbind(dicarboxylate, data.frame(result))
 }
 
-dicarboxylate <- (dicarboxylate$a / 4)/creatinine
+dicarboxylate <- (dicarboxylate$a / 4) / creatinine
 ```
 
 ```{r fig.width=7, fig.height=5}
