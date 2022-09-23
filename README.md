@@ -20,3 +20,11 @@ You can install the development version of NMRcycling from
 # install.packages("remotes")
 remotes::install_github("CPM-Metabolomics-Lipidomics/NMRcycling")
 ```
+
+## Online version
+
+You can also run the NMRcycling notebook on Google Colab. No software
+installation necessary, you only need a Google account. Just go to 
+[Googel Colab](https://colab.research.google.com/drive/1a71rNVgBCjXN-OeUnPt15IvdPgydXYXz?usp=sharing),
+copy the notebook to your own account and click "Run all" in the
+"Runtime" pull down menu.
