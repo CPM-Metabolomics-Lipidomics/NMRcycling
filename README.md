@@ -8,8 +8,8 @@
 
 The goal of `NMRcycling` is to be an addition to the chapter *NMR based
 Metabolomics: monitoring physiological response to physical exercise* in
-the book XXX. This package contains the data and functions to work with
-the data.
+the book *A Practical Guide to Metabolomics Applications in Health and Disease*.
+This package contains the data and functions to work with the data.
 
 ## Installation
 
