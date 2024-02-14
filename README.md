@@ -6,10 +6,11 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of `NMRcycling` is to be an addition to the chapter *NMR based
+The goal of `NMRcycling` is to provide the R code that is described in the chapter *NMR based
 Metabolomics: monitoring physiological response to physical exercise* in
 the book *A Practical Guide to Metabolomics Applications in Health and Disease*.
-This package contains the data and functions to work with the data.
+This package contains the script and the functions to work with the NMR data. The data itself
+is stored in a second repository, [NMRcycling_data](https://github.com/CPM-Metabolomics-Lipidomics/NMRcycling_data).
 
 ## Installation
 
