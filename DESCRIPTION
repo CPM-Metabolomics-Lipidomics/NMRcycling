@@ -3,7 +3,8 @@ Type: Package
 Title: This package belongs to the NMR based metabolomics chapter
 Version: 0.1.9999
 Authors@R: c(
-    person("Derks", "Rico", email = "r.j.e.derks@lumc.nl", role = c("cre", "aut")),
+    person("Derks", "Rico", email = "r.j.e.derks@lumc.nl", role = c("cre", "aut"),
+           comment = c(ORCID = "0000-0002-8920-7133")),
     person("Verhoeven", "Aswin", email = "a.verhoeven@lumc.nl", role = "aut"))
 Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
 Description: This package belongs to the NMR base metabolimics chapter which is
@@ -12,7 +13,7 @@ License: BSD_2_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1
-Suggests: 
+Imports: 
     AlpsNMR,
     factoextra,
     ggplot2,
