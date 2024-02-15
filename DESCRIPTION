@@ -1,7 +1,7 @@
 Package: NMRcycling
 Type: Package
 Title: This package belongs to the NMR based metabolomics chapter
-Version: 0.1.0
+Version: 0.1.9999
 Authors@R: c(
     person("Derks", "Rico", email = "r.j.e.derks@lumc.nl", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0002-8920-7133")),
@@ -15,12 +15,20 @@ LazyData: true
 RoxygenNote: 7.3.1
 Imports: 
     AlpsNMR,
-    knitr,
-    rmarkdown,
-    readxl,
     factoextra,
+    ggplot2,
+    ggrepel,
+    gridExtra,
+    httpuv,
+    patchwork,
+    IMIFA,
+    knitr,
     prospectr,
-    sessioninfo
+    readxl,
+    rmarkdown,
+    sessioninfo,
+    stats,
+    tidyr
 Remotes:
     bioc::AlpsNMR
 VignetteBuilder: knitr

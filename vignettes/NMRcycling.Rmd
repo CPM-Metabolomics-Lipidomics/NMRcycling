@@ -1,6 +1,11 @@
 ---
-title: "NMR Cycling"
-output: rmarkdown::html_vignette
+title: "NMRcycling"
+subtitle: "Center for Proteomics & Metabolomics, LUMC"
+date: "`r Sys.Date()`"
+author: "A. Verhoeven"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{NMRcycling}
   %\VignetteEngine{knitr::rmarkdown}
@@ -15,13 +20,18 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(NMRcycling)
 library(AlpsNMR)
+library(factoextra)
 library(readxl)
 library(prospectr)
-library(factoextra)
-
-data_dir <- "/home/ricoderks/Documents/LUMC/Projects/NMRcycling_data/NMR"
+library(httpuv)
+library(ggplot2)
+library(ggrepel)
+library(patchwork)
+library(IMIFA)
+library(gridExtra)
+library(tidyr)
+library(NMRcycling)
 ```
 
 # Introduction
@@ -30,9 +40,12 @@ data_dir <- "/home/ricoderks/Documents/LUMC/Projects/NMRcycling_data/NMR"
 
 ## Read data
 
+### Read NMR data
+
 ```{r get_dataset_names}
 # get all folders
-datasetnames <- list.dirs(path = data_dir,
+datasetnames <- list.dirs(path = system.file("extdata", 
+                                             package = "NMRcycling"),
                           recursive = FALSE)
 
 # get the sample name from the folder name
@@ -43,18 +56,50 @@ sample_names <- basename(datasetnames)
 # read all data
 datasets <- nmr_read_samples(sample_names = file.path(datasetnames, "10"))
 
+# the experiment names are incorrect, fix this here
+datasets$metadata <- lapply(datasets$metadata, function(x) {
+  x$NMRExperiment <- sample_names
+  return(x)
+})
+```
+
+```{r show_sample, fig.width=7, fig.height=5}
 # interpolate 1D NMR spectra
 datasets <- nmr_interpolate_1D(samples = datasets, 
                                axis = c(min = -0.5, max = 10, by = 2.3E-4))
 
 # show raw NMR plots
 plot(datasets, 
-     NMRExperiment = c("10...1", "10...2"))
+     NMRExperiment = c("Sample9999")) +
+  theme_minimal()
+```
+
+### Read meta data
+
+```{r metadata}
+# read the meta data, meta data is in hte package NMRcycling
+meta <- read_excel(path = system.file("metadata", "metadata.xlsx",
+                                      package = "NMRcycling"))
+
+# change some columns to factor
+meta$Timepoint <- factor(meta$Timepoint)
+
+# set names for adding meta data
+datasets$metadata$external$path <- sample_names
+
+# add meta data to the dataset
+datasets <- nmr_meta_add(nmr_data = datasets, 
+                         metadata = meta, 
+                         by = c("path" = "Path"))
 ```
 
 ## Pre-processing
 
-Remove regions from the spectra.
+Remove regions from the spectra. 
+
+* water peak region between 4.5 and 5.0 ppm
+* points outside of the range where we expect metabolite peaks, downfield of 10 ppm
+and upfield of -0.5 ppm.
 
 ```{r exclude_regions}
 # define regions to exclude
@@ -65,55 +110,135 @@ regions <- list(water = c(4.5, 5.0),
 # exclude the regions
 datasets <- nmr_exclude_region(samples = datasets, 
                                exclude = regions)
-plot(datasets, 
-     NMRExperiment = c("10...1", "10...2"))
 ```
 
 ## Pre-treatment
 
 ### Normalization
 
-```{r normalization}
+```{r normalization, fig.width=7, fig.height=5}
 # normalization
 datasets <- nmr_normalize(samples = datasets, 
-                          method = c("area"))
+                          method = c("pqn"))
 
 # show normalized spectra
 plot(datasets, 
-     NMRExperiment = c("10...1", "10...2"))
+     NMRExperiment = "Sample9999") +
+  theme_minimal()
+```
+
+### HMDB library
+
+The `AlpsNMR` package contains the chemical shift database from the Human Metabolome Database (HMDB). You can load 
+database with the following command.
+
+```{r load_hmdb}
+load(file = system.file("data", "hmdb.rda",
+                        package = "AlpsNMR"))
+```
+
+On the website of the HMDB we can find the indices (accession numbers) of the ketone bodies: 11, 60 and 1659 for 3-hydroxybutyrate, acetoacetate and acetone respectively.
+
+```{r show_chemical_shift}
+hmdb$pos_in_ppm <- hmdb$pos_in_ppm - 1.47 + 1.486
+hmdbket <- hmdb[grepl("HMDB0000011|HMDB0000060|HMDB0001659", hmdb$Accession), ]
+hmdbket[, c("Metabolite", "pos_in_ppm", "Accession", "Urine")]
+```
+
+```{r extract_metabolites}
+# select only the Exercise days
+dsexcday <- datasets[datasets$meta$external$Day == "Exercise day"]
+# select the 3 shifts for the 3 metabolites
+hmdbsel <- hmdbket[c(1, 5, 7), ]
+
+# set the ranges for plotting
+rn1 <- hmdbsel[[1, "pos_in_ppm"]] + c(-1, 1) * 0.03
+rn2 <- hmdbsel[[2, "pos_in_ppm"]] + c(-1, 1) * 0.03
+rn3 <- hmdbsel[[3, "pos_in_ppm"]] + c(-1, 1) * 0.03
+```
+
+```{r show_metabolites, fig.width=7, fig.height=5}
+pl1 <- plot(dsexcday, 
+            chemshift_range = rn1, 
+            color = "Timepoint") + 
+  ggtitle(hmdbsel[[1, "Metabolite"]])
+pl2 <- plot(dsexcday, 
+            chemshift_range = rn2, 
+            color = "Timepoint") + 
+  ggtitle(hmdbsel[[2,"Metabolite"]])
+pl3 <- plot(dsexcday, 
+            chemshift_range = rn3, 
+            color = "Timepoint") + 
+  ggtitle(hmdbsel[[3,"Metabolite"]])
+
+pl1 + pl2 + pl3 +
+  plot_layout(guides = "collect") &
+  theme_minimal() +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "bottom")
 ```
 
 ### Binning
 
-```{r binning}
+```{r binning, fig.width=7, fig.height=5}
+# make sure to keep the original dataset
+ds <- datasets
 # bin the data
-datasets$data_1r <- binning(X = datasets$data_1r, 
-                            bin.size = 400)
+ds$data_1r <- binning(X = ds$data_1r, 
+                      bin.size = 200)
 
 # bin the axis
-datasets$axis <- binning(X = datasets$axis, 
-                         bin.size = 400)
+ds$axis <- binning(X = ds$axis, 
+                   bin.size = 200)
 
-# showed binned spectra
-plot(datasets, 
-     NMRExperiment = c("10...1", "10...2"))
+# show binned spectra
+plot(ds, 
+     NMRExperiment = "Sample9999") +
+  theme_minimal()
 ```
 
-### Read meta data
+## Analysis
 
-```{r metadata}
-# read the meta data, meta data is in hte package NMRcycling
-meta <- read_excel(path = system.file("metadata", "metadata.xlsx",
-                                      package = "NMRcycling"))
+### t-test
 
-ds <- datasets
+Do a paired t-test on all bins.
 
-ds$metadata$external$path <- sample_names #datasets$metadata$info$info_sample_path
+```{r}
+# make data.frame
+df_data <- cbind.data.frame(ds$metadata$external, ds$data_1r)
 
-# add meta data to the dataset
-ds <- nmr_meta_add(nmr_data = ds, 
-                   metadata = meta, 
-                   by = c("path" = "Path"))
+# remove early timepoints, i.e. timepoint 0 and 1 and remove the pooled sample
+remove_pool <- df_data$Day != "Pool"
+remove_early <- !(df_data$Timepoint == "0" | 
+                    df_data$Timepoint == "1")
+df_data <- df_data[remove_pool & remove_early, ]
+
+# sort on timepoint to make sure that below the subsettings creates the correct pairs
+df_data <- df_data[order(df_data$Timepoint), ]
+
+# calculate the p-value and log2 fold change
+df_res <- data.frame(
+  bin = round(ds$axis, 2),
+  logp = -log10(sapply(df_data[, -c(1:6)], function(x) t.test(x = x[df_data$Day == "Exercise day"],
+                                                              y = x[df_data$Day == "Rest day"],
+                                                              paired = TRUE)$p.value)),
+  logfc = log2(colMeans(df_data[df_data$Day == "Exercise day", -c(1:6)]) / colMeans(df_data[df_data$Day == "Rest day", -c(1:6)]))
+)
+```
+
+```{r volcano plot, fig.width=7, fig.height=5}
+ggplot(data = df_res,
+       aes(x = logfc,
+           y = logp,
+           label = bin)) +
+  geom_point() +
+  geom_text_repel() +
+  geom_vline(xintercept = c(-1, 1), 
+             linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05 / nrow(df_res)), 
+             linetype = "dashed") +
+  theme_minimal()
 ```
 
 ### PCA analysis
@@ -144,7 +269,7 @@ res <- (prcomp(df2))
 
 Show the scores plot.
 
-```{r pca_scoresplot}
+```{r pca_scoresplot, fig.width=7, fig.height=5}
 # show scores plot
 fviz_pca_ind(X = res,
              axes = c(1, 2),
@@ -154,19 +279,397 @@ fviz_pca_ind(X = res,
              ellipse.type = "confidence",
              legend.title = "Groups",
              repel = TRUE
-             )
+)
 ```
 
 Show the biplot.
 
-```{r pca_biplot}
+```{r pca_biplot, fig.width=7, fig.height=5}
 fviz_pca_biplot(X = res,
                 repel = TRUE,
                 axes = c(1, 2),
                 col.var = "contrib", # Variables color
                 gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
                 select.var = list(contrib = 10)
-                )
+)
+```
+
+#### Interesting variables
+
+Select bin **3.19** and have a closer look.
+
+```{r bin319, fig.width=7, fig.height=5}
+# should rename df
+sel <- which(colnames(df) == "3.19") + c(-1, 0, 1)
+rn <- ds$axis[sel]
+rn <- 0.5 * c(rn[1] + rn[2], rn[2] + rn[3])
+
+plot(datasets[datasets$meta$external$Day == "Exercise day"], 
+     chemshift_range = rn, 
+     color = "Timepoint") +
+  theme_minimal()
+```
+
+Look up the chemical shift in HMDB.
+
+```{r}
+hmdbsel <- hmdb[hmdb$pos_in_ppm > min(rn) &
+                  hmdb$pos_in_ppm < max(rn), ]
+hmdbsel <- hmdbsel[is.na(hmdbsel$J_constant), ]
+hmdbsel <- hmdbsel[grepl(pattern = "HMDB000....", 
+                         x = hmdbsel$Accession), ]
+
+# show the result
+hmdbsel[, c("Metabolite", "pos_in_ppm", "Accession", "Urine")]
+```
+
+Focus on **L-Acetylcarnitine**.
+
+```{r}
+hmdb[hmdb$Accession == "HMDB0000201", c("Metabolite", "pos_in_ppm", "Accession", "Urine")]
+```
+
+Check the spectra.
+
+```{r acetylcarnitine, fig.width=7, fig.height=5}
+hmdbsel <- hmdb[hmdb$Accession == "HMDB0000201", ]
+hmdbsel <- hmdbsel[round(hmdbsel$pos_in_ppm * 1000) != 3196, ]
+# extract the chemical shift
+pos <- hmdbsel[[1, "pos_in_ppm"]]
+rn <- 0.02 * c(-1, 1) + pos
+
+plot(datasets[datasets$meta$external$Day == "Exercise day"], 
+     chemshift_range = rn, 
+     color = "Timepoint") +
+  theme_minimal()
+```
+
+Select bin **1.3** and have a closer look.
+
+```{r bin12, fig.width=7, fig.height=5}
+# should rename df
+sel <- which(colnames(df) == "1.3") + c(-1, 0, 1)
+rn <- ds$axis[sel]
+rn <- 0.5 * c(rn[1] + rn[2], rn[2] + rn[3])
+
+plot(datasets[datasets$meta$external$Day == "Exercise day"], 
+     chemshift_range = rn, 
+     color = "Timepoint") +
+  theme_minimal()
+```
+
+Look up the chemical shift in HMDB.
+
+```{r}
+hmdbsel <- hmdb[hmdb$pos_in_ppm > min(rn) &
+                  hmdb$pos_in_ppm < max(rn), ]
+# hmdbsel <- hmdbsel[is.na(hmdbsel$J_constant), ]
+hmdbsel <- hmdbsel[hmdbsel$Urine == TRUE,]
+hmdbsel <- hmdbsel[grepl(pattern = "HMDB000....", 
+                         x = hmdbsel$Accession), ]
+
+# show the result
+hmdbsel[, c("Metabolite", "pos_in_ppm", "Accession", "Urine")]
+```
+
+Have a closer look at **Capric acid**
+
+```{r}
+hmdb[hmdb$Accession == "HMDB0000511", c("Metabolite", "pos_in_ppm", "Accession", "Urine")]
+```
+
+Check the spectra for the 0.866 ppm.
+
+```{r capric_acid, fig.width=7, fig.height=5}
+hmdbsel <- hmdb[hmdb$Accession == "HMDB0000511",]
+# select the smallest chemical shift
+pos <- min(hmdbsel[, "pos_in_ppm"])
+rn <- 0.02 * c(-1, 1) + pos
+
+plot(datasets[datasets$meta$external$Day == "Exercise day"], 
+     chemshift_range = rn, 
+     color = "Timepoint") +
+  theme_minimal()
+```
+
+## Peak fitting
+
+### Creatinine
+
+```{r fig.width=7, fig.height=5}
+sp <- datasets[datasets$metadata$external$RowID == "Pool"]$data_1r
+ax <- datasets[datasets$metadata$external$RowID == "Pool"]$axis
+sel <- (ax > 3.03) & (ax < 3.07)
+
+pl <- peakfit(ax[sel], 3.051, 1 / 600, 0, 1, 0, sp[sel])
+
+spfit <- do.call("peak", pl)
+dffit <- data.frame(ax = ax[sel], 
+                    sp = sp[sel], 
+                    spfit)
+
+ggplot(data = dffit,
+       aes(x = ax,
+           y = sp)) + 
+  geom_point() + 
+  geom_line(aes(y = spfit)) +
+  theme_minimal()
+```
+
+```{r}
+creatinine <- NULL
+id <- datasets$metadata$external$RowID
+for(t in id) {
+  pos <- which(datasets$metadata$external$RowID == t)
+  dffit <- data.frame(sp = datasets[pos]$data_1r[sel], 
+                      ax = datasets[pos]$axis[sel])
+  
+  result <- peakfitsimple(dffit$ax, pl$v0, pl$fwhh, pl$p, pl$a, pl$b, dffit$sp)
+  
+  result$v <- NULL
+  result$id <- t
+  creatinine <- rbind(creatinine, data.frame(result))
+}
+creatinine <- (creatinine$a / 3)
+```
+
+### beta-hydroxybutyrate
+
+```{r fig.width=7, fig.height=5}
+sp <- datasets[datasets$metadata$external$RowID == "ExerciseLate 7"]$data_1r
+ax <- datasets[datasets$metadata$external$RowID == "ExerciseLate 7"]$axis
+sel <- (ax > 1.208) & (ax < 1.22)
+
+pl <- peakfit(ax[sel], 1.2102, 1 / 600, 0, 1, 0, sp[sel])
+
+spfit <- do.call("peak", pl)
+dffit <- data.frame(ax = ax[sel], 
+                    sp = sp[sel], 
+                    spfit)
+
+ggplot(data = dffit, 
+       aes(x = ax,
+           y = sp)) + 
+  geom_point() + 
+  geom_line(aes(y = spfit)) +
+  theme_minimal()
+```
+
+```{r}
+bhb <- NULL
+id <- datasets$metadata$external$RowID
+for(t in id) {
+  pos <- which(datasets$metadata$external$RowID == t)
+  dffit <- data.frame(sp = datasets[pos]$data_1r[sel], 
+                      ax = datasets[pos]$axis[sel])
+  
+  result <- peakfitsimple(dffit$ax, pl$v0, pl$fwhh, pl$p, pl$a, pl$b, dffit$sp)
+  result$v <- NULL
+  result$id <- t
+  
+  bhb <- rbind(bhb, data.frame(result))
+}
+
+bhb <- (2 * bhb$a / 3) / creatinine # number of protons, only half of doublet fitted
+```
+
+```{r fig.width=7, fig.height=5}
+mets <- cbind(datasets$metadata$external, data.frame(bhb))
+mets <- mets[mets$RowID != "Pool",]
+
+ggplot(data = mets, 
+       aes(x = Timepoint, 
+           y = bhb, 
+           group = Day, 
+           color = Day)) + 
+  geom_line(size = 2) +
+  theme_minimal()
+```
+
+### Acetone
+
+```{r fig.width=7, fig.height=5}
+sp <- datasets[datasets$metadata$external$RowID == "ExerciseLate 7"]$data_1r
+ax <- datasets[datasets$metadata$external$RowID == "ExerciseLate 7"]$axis
+sel <- (ax > 2.222) & (ax < 2.25)
+
+pl <- peakfit(ax[sel], 2.238, 1 / 600, 0, 1, 0, sp[sel])
+
+spfit <- do.call("peak", pl)
+dffit <- data.frame(ax = ax[sel], 
+                    sp = sp[sel], 
+                    spfit)
+
+ggplot(data = dffit, 
+       aes(x = ax,
+           y = sp)) + 
+  geom_point() + 
+  geom_line(aes(y = spfit)) +
+  theme_minimal()
+```
+
+```{r}
+acetone <- NULL
+id <- datasets$metadata$external$RowID
+for(t in id) {
+  pos <- which(datasets$metadata$external$RowID == t)
+  dffit <- data.frame(sp = datasets[pos]$data_1r[sel], 
+                      ax = datasets[pos]$axis[sel])
+  
+  result <- peakfitsimple(dffit$ax, pl$v0, pl$fwhh, pl$p, pl$a, pl$b, dffit$sp)
+  result$v <- NULL
+  result$id <- t
+  
+  acetone <- rbind(acetone, data.frame(result))
+}
+
+acetone <- (acetone$a / 6) / creatinine # number of protons
+```
+
+```{r fig.width=7, fig.height=5}
+mets <- cbind(datasets$metadata$external, data.frame(acetone))
+mets <- mets[mets$RowID != "Pool",]
+
+ggplot(data = mets, 
+       aes(x = Timepoint, 
+           y = acetone, 
+           group = Day, 
+           color = Day)) + 
+  geom_line(size = 2) +
+  theme_minimal()
+```
+
+### Acetylcarnitine
+
+```{r fig.width=7, fig.height=5}
+sp <- datasets[datasets$metadata$external$RowID == "ExerciseLate 7"]$data_1r
+ax <- datasets[datasets$metadata$external$RowID == "ExerciseLate 7"]$axis
+sel <- (ax > 3.175) & (ax < 3.215)
+
+pl <- peakfit(ax[sel], 3.198, 1 / 600, 0, 1, 0, sp[sel])
+
+spfit <- do.call("peak", pl)
+dffit <- data.frame(ax = ax[sel], 
+                    sp = sp[sel], 
+                    spfit)
+
+ggplot(data = dffit, 
+       aes(x = ax,
+           y = sp)) + 
+  geom_point() + 
+  geom_line(aes(y = spfit)) +
+  theme_minimal()
+```
+
+```{r}
+acetylcarnitine <- NULL
+id <- datasets$metadata$external$RowID
+for(t in id) {
+  pos <- which(datasets$metadata$external$RowID == t)
+  dffit <- data.frame(sp = datasets[pos]$data_1r[sel], 
+                      ax = datasets[pos]$axis[sel])
+  
+  result <- peakfitsimple(dffit$ax, pl$v0, pl$fwhh, pl$p, pl$a, pl$b, dffit$sp)
+  result$v <- NULL
+  result$id <- t
+  
+  acetylcarnitine <- rbind(acetylcarnitine, data.frame(result))
+}
+
+acetylcarnitine <- (acetylcarnitine$a / 9) / creatinine
+```
+
+```{r fig.width=7, fig.height=5}
+mets <- cbind(datasets$metadata$external, data.frame(acetylcarnitine))
+mets <- mets[mets$RowID != "Pool",]
+
+ggplot(data = mets, 
+       aes(x = Timepoint, 
+           y = acetylcarnitine, 
+           group = Day, 
+           color = Day)) + 
+  geom_line(size = 2) +
+  theme_minimal()
+```
+
+### Dicarboxylate
+
+```{r fig.width=7, fig.height=5}
+sp <- datasets[datasets$metadata$external$RowID == "ExerciseLate 7"]$data_1r
+ax <- datasets[datasets$metadata$external$RowID == "ExerciseLate 7"]$axis
+sel <- (ax > 1.50) & (ax < 1.59)
+
+pl <- peakfit(ax[sel], 1.551, 1 / 600, 0, 1, 0, sp[sel])
+
+spfit <- do.call("peak", pl)
+dffit <- data.frame(ax = ax[sel], 
+                    sp = sp[sel], 
+                    spfit)
+
+ggplot(data = dffit, 
+       aes(x = ax,
+           y = sp)) + 
+  geom_point() + 
+  geom_line(aes(y = spfit)) +
+  theme_minimal()
+```
+
+```{r}
+dicarboxylate <- NULL
+id <- datasets$metadata$external$RowID
+for(t in id) {
+  pos <- which(datasets$metadata$external$RowID == t)
+  dffit <- data.frame(sp = datasets[pos]$data_1r[sel], 
+                      ax = datasets[pos]$axis[sel])
+  
+  result <- peakfitsimple(dffit$ax, pl$v0, pl$fwhh, pl$p, pl$a, pl$b, dffit$sp)
+  result$v <- NULL
+  result$id <- t
+  
+  dicarboxylate <- rbind(dicarboxylate, data.frame(result))
+}
+
+dicarboxylate <- (dicarboxylate$a / 4) / creatinine
+```
+
+```{r fig.width=7, fig.height=5}
+mets <- cbind(datasets$metadata$external, data.frame(dicarboxylate))
+mets <- mets[mets$RowID != "Pool",]
+
+ggplot(data = mets, 
+       aes(x = Timepoint, 
+           y = dicarboxylate, 
+           group = Day, 
+           color = Day)) + 
+  geom_line(size = 2) +
+  theme_minimal()
+```
+
+### Combine all compounds
+
+```{r}
+# combine all data.frames
+mets <- cbind(datasets$metadata$external, data.frame(acetone, bhb, acetylcarnitine, dicarboxylate))
+# make long for easy plotting
+mets_long <- pivot_longer(data = mets, 
+                          cols = c("acetone", "bhb", "acetylcarnitine", "dicarboxylate"),
+                          names_to = "compound")
+
+# remove the pooled sample
+mets_long <- mets_long[mets_long$Day != "Pool", ]
+```
+
+```{r fig.width=7, fig.height=5}
+ggplot(data = mets_long, 
+       aes(x = Timepoint, 
+           y = value, 
+           group = compound, 
+           color = compound)) + 
+  geom_line(size = 1) +
+  facet_wrap(. ~ Day) +
+  theme_minimal() +
+  theme(strip.text.x = element_text(face = "bold"),
+        legend.position = "bottom")
 ```
 
 # Sessioninfo
@@ -174,4 +677,3 @@ fviz_pca_biplot(X = res,
 ```{r}
 sessioninfo::session_info()
 ```
-

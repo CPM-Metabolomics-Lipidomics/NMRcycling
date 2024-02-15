@@ -1,0 +1,11 @@
+##TITLE= Parameter file, TOPSPIN		Version 3.0
+##JCAMPDX= 5.0
+##DATATYPE= Parameter Values
+##NPOINTS= 2	$$ modification sequence number
+##ORIGIN= Bruker BioSpin GmbH
+##OWNER= nmrsu
+$$ 2014-11-04 11:06:54.210 +0100  nmrsu@5-PARA-11-0140
+$$ C:/u/data/SamTrack/nmr/FOS2014_K_472_B_1_R_1_Q_0_F_4_ID_40_NMR/10/pdata/1/assocs
+$$ process C:\Bruker\TopSpin3.0\prog\mod\dataserver.exe
+##$MULTDISP= <C:/u/data/SamTrack/nmr/FOS2014_K_472_B_1_R_1_Q_0_F_4_ID_22_NMR/10/pdata/1>
+##END=
