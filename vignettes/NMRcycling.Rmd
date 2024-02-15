@@ -1,6 +1,11 @@
 ---
 title: "NMRcycling"
-output: rmarkdown::html_vignette
+subtitle: "Center for Proteomics & Metabolomics, LUMC"
+date: "`r Sys.Date()`"
+author: "A. Verhoeven"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{NMRcycling}
   %\VignetteEngine{knitr::rmarkdown}
@@ -672,4 +677,3 @@ ggplot(data = mets_long,
 ```{r}
 sessioninfo::session_info()
 ```
-
