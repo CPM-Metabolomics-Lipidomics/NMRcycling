@@ -20,28 +20,7 @@
 #'
 #' @export
 #'
-#' @importFrom stats nls nls.control
-#'
-#' @author Aswin Verhoeven
-#'
-
-#' @title Do a simple peak fit
-#'
-#' @description Do simple peak fit
-#'
-#' @param v WIP
-#' @param v0start WIP
-#' @param fwhhstart WIP
-#' @param pstart WIP
-#' @param astart WIP
-#' @param bstart WIP
-#' @param sp WIP
-#'
-#' @return  WIP
-#'
-#' @export
-#'
-#' @importFrom stats nls nls.control
+#' @import From stats nls nls.control
 #'
 #' @author Aswin Verhoeven
 #'
