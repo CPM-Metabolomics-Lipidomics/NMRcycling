@@ -9,10 +9,10 @@ pqn(X, n = "median", QC = NULL)
 \arguments{
 \item{X}{matrix to normalize samples * variables (rows * columns)}
 
-\item{n}{normalization reference: "mean" for using the overall average of variables as reference 
+\item{n}{normalization reference: "mean" for using the overall average of variables as reference
 or "median" (default) for using the overall median of variables as reference}
 
-\item{QC}{vector of number(s) to specify samples which average to use as reference 
+\item{QC}{vector of number(s) to specify samples which average to use as reference
 (e.g. QC samples)}
 }
 \value{
@@ -25,8 +25,8 @@ Perform Probabilistic Quotient Normalization
 First a total area normalization should be done before PQN is applied.
 }
 \references{
-Dieterle, F., Ross, A., Schlotterbeck, G. & Senn, H. Probabilistic Quotient 
-Normalization as Robust Method to Account for Dilution of Complex Biological Mixtures. 
+Dieterle, F., Ross, A., Schlotterbeck, G. & Senn, H. Probabilistic Quotient
+Normalization as Robust Method to Account for Dilution of Complex Biological Mixtures.
 Application in H1 NMR Metabonomics. Anal. Chem. 78, 4281-4290 (2006).
 }
 \author{
