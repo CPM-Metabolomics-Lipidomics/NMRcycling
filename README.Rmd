@@ -46,6 +46,12 @@ Next, you can install `NMRcycling` with:
 remotes::install_github("CPM-Metabolomics-Lipidomics/NMRcycling", build_vignettes = TRUE)
 ```
 
+Have a look at the vignette with:
+
+``` r
+browseVignettes(package = "NMRcycling")
+```
+
 ## Online version
 
 You can also run the `NMRcycling` notebook on Google Colab. No software
