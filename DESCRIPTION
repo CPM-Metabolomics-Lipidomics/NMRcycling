@@ -1,7 +1,7 @@
 Package: NMRcycling
 Type: Package
 Title: This package belongs to the NMR based metabolomics chapter
-Version: 0.3.0
+Version: 0.3.0.9000
 Authors@R: c(
     person("Derks", "Rico", email = "r.j.e.derks@lumc.nl", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0002-8920-7133")),
