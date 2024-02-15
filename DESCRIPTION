@@ -1,14 +1,18 @@
 Package: NMRcycling
 Type: Package
 Title: This package belongs to the NMR based metabolomics chapter
-Version: 0.1.9999
+Version: 0.2.0
 Authors@R: c(
     person("Derks", "Rico", email = "r.j.e.derks@lumc.nl", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0002-8920-7133")),
-    person("Verhoeven", "Aswin", email = "a.verhoeven@lumc.nl", role = "aut"))
+    person("Verhoeven", "Aswin", email = "a.verhoeven@lumc.nl", role = "aut",
+           commetn = c(ORCID = "0000-0003-0373-9372"))
 Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
-Description: This package belongs to the NMR base metabolimics chapter which is
-    part of the book XXX.
+Description: The goal of `NMRcycling` is to provide the R code that is described in
+the chapter *NMR based Metabolomics: monitoring physiological response
+to physical exercise* in the book *A Practical Guide to Metabolomics
+Applications in Health and Disease*. This package contains the script
+and the functions to work with the NMR data.
 License: BSD_2_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
