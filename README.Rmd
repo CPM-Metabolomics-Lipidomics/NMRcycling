@@ -27,23 +27,15 @@ The data is also in the package in order to build the vignette.
 
 ## Installation
 
-Before you can install `NMRcycling` several packages are needed. These packages can 
-be installed with:
-
-``` r
-install.packages(c("factoextra", "ggplot2", "ggrepel", "gridExtra", "httpuv",
-                   "patchwork", "INIFA", "knitr", "prospectr", "readxl",
-                   "rmakrdown", "sessioninfo", "tidyr"))
-
-# install.package("BiocManager")
-BiocManager::install("AlpsNMR")
-```
-
-Next, you can install `NMRcycling` with:
+You can install `NMRcycling` with and this will install all packages needed to 
+build the vignette.
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("CPM-Metabolomics-Lipidomics/NMRcycling", build_vignettes = TRUE)
+remotes::install_github("CPM-Metabolomics-Lipidomics/NMRcycling", 
+                        build_vignettes = TRUE,
+                        dependencies = c("Imports", "Suggests"),
+                        upgrade = "never")
 ```
 
 Have a look at the vignette with:
