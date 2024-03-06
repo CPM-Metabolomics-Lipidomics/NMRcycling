@@ -1,15 +1,15 @@
-#' @title Peak fitting function
+#' @title Mixed Gaussian-Lorentzian peak
 #'
-#' @description Peak fitting function
+#' @description Function that generates a mixed Gaussian-Lorentzian peak for the given points (frequencies, chemical shifts...)
 #'
-#' @param v WIP
-#' @param v0 WIP
-#' @param fwhh WIP
-#' @param p WIP
-#' @param a WIP
-#' @param b WIP
+#' @param v Numeric vector containing the axis values (frequencies, chemical shifts...) for the points in a spectral region.
+#' @param v0 Position of the peak on the axis v.
+#' @param fwhh Full width at half height of the peak.
+#' @param p Peak shape (+Infinity indicates a perfect Gaussian, -Infinity a perfect Lorentzian).
+#' @param a Peak area.
+#' @param b Baseline level.
 #'
-#' @return  WIP
+#' @return  Numeric vector with the peak intensity at every element of v.
 #'
 #' @export
 #'

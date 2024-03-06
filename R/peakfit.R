@@ -1,16 +1,22 @@
-#' @title Do a peak fit
+#' @title Perform a peak fit
 #'
-#' @description Do peak fit
+#' @description Function that fits a mixed Gaussian-Lorentzian function to a supplied spectral region. It does this in
+#' several steps. These are:
+#' 1. Optimize peak area.
+#' 2. Optimize the peak area and the baseline level.
+#' 3. Same as 2., but also optimize the peak position.
+#' 4. Same as 3., but also optimize the peak width.
+#' 5. Same as 4., but also optimize the peak shape (Gaussian / Lorentzian).
 #'
-#' @param v WIP
-#' @param v0start WIP
-#' @param fwhhstart WIP
-#' @param pstart WIP
-#' @param astart WIP
-#' @param bstart WIP
-#' @param sp WIP
+#' @param v Numeric vector containing the axis values (frequencies, chemical shifts...) for the points in the spectral region.
+#' @param v0start Starting value for the peak position optimization.
+#' @param fwhhstart Starting value for the peak width (full width at half height) optimization.
+#' @param pstart Starting value for the peak shape optimization (Gaussian / Lorentzian).
+#' @param astart Starting value for the peak area optimization.
+#' @param bstart Starting value for the baseline level optimization.
+#' @param sp Numeric vector containing a spectral region, ideally containing a single peak.
 #'
-#' @return  WIP
+#' @return  A list with the optimized peak parameters.
 #'
 #' @export
 #'
